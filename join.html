@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Join TEAM MIGA</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f4f4; text-align: center; padding: 50px; }
+        .card { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 400px; width: 100%; }
+        input, select, textarea { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #218838; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #007bff; text-decoration: none; margin: 0 10px; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="index.html">← Back to Home</a></div>
+    <div class="card">
+        <h2>Join the Mission</h2>
+        <p>Become a part of MIGA and lead the change.</p>
+        <form id="joinForm">
+            <input type="text" id="name" placeholder="Your Full Name" required>
+            <input type="email" id="email" placeholder="Email Address" required>
+            <select id="role">
+                <option value="volunteer">Volunteer</option>
+                <option value="tech">Tech/Developer</option>
+                <option value="field">Field Worker</option>
+                <option value="marketing">Social Media/Marketing</option>
+            </select>
+            <textarea id="skills" placeholder="What are your skills?"></textarea>
+            <button type="submit">Apply to Join</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // IMPORTANT: Copy the firebaseConfig from your index.html here
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "project--miga.firebaseapp.com",
+            projectId: "project--miga",
+            storageBucket: "project--miga.appspot.com",
+            messagingSenderId: "YOUR_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('joinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(collection(db, "team_applications"), {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    role: document.getElementById('role').value,
+                    skills: document.getElementById('skills').value,
+                    date: new Date().toISOString()
+                });
+                alert("Application Sent! We will contact you soon.");
+                document.getElementById('joinForm').reset();
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        });
+    </script>
+</body>
+</html>
