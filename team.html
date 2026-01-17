@@ -1,105 +1,161 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>MIGA Private Team Hub</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIGA Team Hub - Collaboration</title>
     <style>
-        body { font-family: sans-serif; margin: 0; display: flex; height: 100vh; background: #e5ddd5; }
-        #setup-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        #sidebar { width: 280px; background: #075e54; color: white; padding: 15px; }
-        #chat-box { flex: 1; display: flex; flex-direction: column; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
-        #messages { flex: 1; overflow-y: auto; padding: 20px; }
-        .msg { background: white; padding: 8px 12px; border-radius: 8px; margin-bottom: 5px; width: fit-content; max-width: 70%; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-        .user-name { font-size: 12px; color: #075e54; font-weight: bold; display: block; }
-        #input-area { background: #f0f0f0; padding: 15px; display: flex; gap: 10px; }
-        .team-btn { display: block; width: 100%; padding: 10px; margin: 5px 0; background: #128c7e; color: white; border: none; cursor: pointer; text-align: left; border-radius: 5px; }
+        :root { --whatsapp-green: #075e54; --light-green: #128c7e; --chat-bg: #e5ddd5; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--chat-bg); }
+        
+        /* Entrance Overlay */
+        #auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .auth-box { padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 350px; }
+
+        /* Sidebar */
+        #sidebar { width: 300px; background: var(--whatsapp-green); color: white; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background: #054d44; text-align: center; }
+        .team-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .team-item { background: var(--light-green); padding: 15px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; border: none; color: white; width: 100%; text-align: left; font-size: 16px; }
+        .team-item:hover { background: #0a6b5e; }
+
+        /* Chat Area */
+        #chat-window { flex: 1; display: flex; flex-direction: column; }
+        #chat-header { background: #ededed; padding: 15px 25px; display: flex; align-items: center; border-bottom: 1px solid #ddd; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        
+        .message { background: white; padding: 10px 15px; border-radius: 8px; max-width: 70%; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .sender-name { font-size: 12px; font-weight: bold; color: var(--whatsapp-green); display: block; margin-bottom: 4px; }
+        .timestamp { font-size: 10px; color: #999; float: right; margin-top: 5px; }
+
+        /* Input Area */
+        #input-area { background: #f0f0f0; padding: 15px; display: flex; align-items: center; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 12px; border: none; border-radius: 25px; outline: none; }
+        .send-btn { background: var(--whatsapp-green); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
 
-<div id="setup-overlay">
-    <h2>MIGA Team Login</h2>
-    <input type="text" id="userNameInput" placeholder="Enter Your Real Name" style="padding:10px; width:250px;"><br>
-    <button onclick="startApp()" style="padding:10px 20px; background:#075e54; color:white; border:none; cursor:pointer;">Enter Hub</button>
+<div id="auth-overlay">
+    <div class="auth-box">
+        <h2 style="color: var(--whatsapp-green)">Team Authentication</h2>
+        <p>Only approved MIGA members can enter.</p>
+        <input type="text" id="loginName" placeholder="Your Display Name" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+        <input type="email" id="loginEmail" placeholder="Registered Email" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px;">
+        <button onclick="verifyAndEntry()" style="width:100%; padding:12px; background:var(--whatsapp-green); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Access Hub</button>
+    </div>
 </div>
 
 <div id="sidebar">
-    <h3>Work Groups</h3>
-    <div id="teamList"></div>
+    <div class="sidebar-header">
+        <h3>MIGA WORK GROUPS</h3>
+    </div>
+    <div class="team-list" id="teamRooms">
+        </div>
+    <button onclick="location.href='index.html'" style="padding:15px; background:#054d44; color:white; border:none; cursor:pointer;">← Leave Hub</button>
 </div>
 
-<div id="chat-box">
-    <div id="messages"><h3>Select a team to start chatting</h3></div>
+<div id="chat-window">
+    <div id="chat-header">
+        <h3 id="currentRoomName">Select a Work Group to Start</h3>
+    </div>
+    <div id="messages"></div>
     <div id="input-area" style="display:none;">
-        <input type="file" id="fileAttach" style="display:none;">
-        <button onclick="document.getElementById('fileAttach').click()">📎</button>
-        <input type="text" id="textInput" placeholder="Type a message..." style="flex:1; padding:10px;">
-        <button id="sendBtn" style="padding:10px 20px;">Send</button>
+        <input type="text" id="msgInput" placeholder="Type a message...">
+        <button class="send-btn" id="sendBtn">➤</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    
-    const firebaseConfig = { /* PASTE YOUR CONFIG HERE */ };
+    import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // PASTE YOUR FIREBASE CONFIG HERE
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "project--miga.firebaseapp.com",
+        projectId: "project--miga",
+        storageBucket: "project--miga.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let currentUserName = "";
-    let currentTeamId = "";
-    let unsubscribe = null;
+    let currentUser = "";
+    let activeRoomId = "";
+    let messageUnsubscribe = null;
 
-    window.startApp = function() {
-        currentUserName = document.getElementById('userNameInput').value;
-        if(!currentUserName) return alert("Please enter your name");
-        document.getElementById('setup-overlay').style.display = 'none';
-        loadTeams();
-    }
+    // 1. Verify Member
+    window.verifyAndEntry = async () => {
+        const name = document.getElementById('loginName').value;
+        const email = document.getElementById('loginEmail').value;
+        
+        if(!name || !email) return alert("Please fill all fields");
 
-    // Load available teams from Firebase
-    function loadTeams() {
+        const q = query(collection(db, "approved_members"), where("email", "==", email));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            alert("Email not recognized. Please apply via 'Join Movement' and wait for Admin approval.");
+        } else {
+            currentUser = name;
+            document.getElementById('auth-overlay').style.display = 'none';
+            loadRooms();
+        }
+    };
+
+    // 2. Load Rooms Created by Admin
+    function loadRooms() {
         onSnapshot(collection(db, "teams"), (snapshot) => {
-            const list = document.getElementById('teamList');
+            const list = document.getElementById('teamRooms');
             list.innerHTML = "";
             snapshot.forEach(doc => {
                 const btn = document.createElement('button');
-                btn.className = "team-btn";
-                btn.innerText = doc.data().name;
-                btn.onclick = () => selectTeam(doc.id, doc.data().name);
+                btn.className = "team-item";
+                btn.innerText = "📁 " + doc.data().name;
+                btn.onclick = () => selectRoom(doc.id, doc.data().name);
                 list.appendChild(btn);
             });
         });
     }
 
-    function selectTeam(id, name) {
-        currentTeamId = id;
+    // 3. Switch Chat Rooms
+    function selectRoom(roomId, roomName) {
+        activeRoomId = roomId;
+        document.getElementById('currentRoomName').innerText = "Working on: " + roomName;
         document.getElementById('input-area').style.display = 'flex';
-        document.getElementById('messages').innerHTML = `<h4>Chatting in: ${name}</h4>`;
-        
-        // Listen for messages ONLY for this team
-        if (unsubscribe) unsubscribe();
-        const q = query(collection(db, "messages"), where("teamId", "==", id), orderBy("time", "asc"));
-        unsubscribe = onSnapshot(q, (snapshot) => {
-            const msgDiv = document.getElementById('messages');
-            msgDiv.innerHTML = `<h4>Team: ${name}</h4>`;
+
+        if(messageUnsubscribe) messageUnsubscribe();
+
+        const q = query(collection(db, "messages"), where("roomId", "==", roomId), orderBy("time", "asc"));
+        messageUnsubscribe = onSnapshot(q, (snapshot) => {
+            const msgArea = document.getElementById('messages');
+            msgArea.innerHTML = "";
             snapshot.forEach(doc => {
                 const d = doc.data();
-                msgDiv.innerHTML += `<div class="msg"><span class="user-name">${d.sender}</span>${d.text}</div>`;
+                const div = document.createElement('div');
+                div.className = "message";
+                div.innerHTML = `<span class="sender-name">${d.sender}</span>${d.text}<span class="timestamp">${new Date(d.time.seconds*1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>`;
+                msgArea.appendChild(div);
             });
-            msgDiv.scrollTop = msgDiv.scrollHeight;
+            msgArea.scrollTop = msgArea.scrollHeight;
         });
     }
 
+    // 4. Send Message
     document.getElementById('sendBtn').onclick = async () => {
-        const text = document.getElementById('textInput').value;
-        if(!text || !currentTeamId) return;
+        const text = document.getElementById('msgInput').value;
+        if(!text || !activeRoomId) return;
+
         await addDoc(collection(db, "messages"), {
-            teamId: currentTeamId,
-            sender: currentUserName,
+            roomId: activeRoomId,
+            sender: currentUser,
             text: text,
             time: new Date()
         });
-        document.getElementById('textInput').value = "";
+        document.getElementById('msgInput').value = "";
     };
 </script>
 </body>
