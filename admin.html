@@ -1,236 +1,156 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>MIGA Admin - Aryan's Command Centre</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <title>MIGA Admin Command Center</title>
     <style>
-        :root { --saffron: #FF9933; --white: #FFFFFF; --green: #138808; --navy: #000080; }
-        body { font-family: 'Poppins', sans-serif; background: #1a1a1a; margin: 0; color: #e0e0e0; }
+        :root { --primary: #1a73e8; --dark: #121212; --danger: #d93025; --success: #188038; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; display: flex; }
         
-        .flag-header { width: 100%; display: flex; flex-direction: column; }
-        .stripe { width: 100%; height: 30px; display: flex; align-items: center; justify-content: center; }
-        .s-saffron { background-color: var(--saffron); }
-        .s-white { background-color: var(--white); height: 35px; }
-        .s-green { background-color: var(--green); }
-        .chakra { height: 30px; width: 30px; }
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--dark); color: white; height: 100vh; position: fixed; padding: 20px; }
+        .sidebar h2 { color: #f4b400; font-size: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .nav-link { display: block; color: #ccc; text-decoration: none; padding: 12px 0; border-bottom: 1px solid #222; }
+        .nav-link:hover { color: white; }
 
-        .container { max-width: 900px; margin: auto; padding: 20px; }
-        h1, h2 { color: var(--saffron); }
-
-        .card { background: #2d2d2d; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #444; }
+        /* Main Content */
+        .main { margin-left: 300px; padding: 40px; width: 100%; }
+        .section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
         
-        textarea, input { width: 100%; background: #444; color: white; border: 1px solid #555; padding: 10px; border-radius: 5px; box-sizing: border-box; font-family: inherit; margin-bottom: 10px; }
-        
-        button { cursor: pointer; padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; margin-right: 5px; transition: 0.2s; }
-        .btn-post { background: var(--saffron); color: black; width: 100%; }
-        .btn-approve { background: var(--green); color: white; }
-        .btn-reply { background: var(--navy); color: white; }
-        .btn-del { background: #d32f2f; color: white; }
-        .btn-note { background: #0288d1; color: white; font-size: 0.8rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: #666; }
 
-        .section-header { border-bottom: 2px solid #555; padding-bottom: 10px; margin-bottom: 20px; margin-top: 40px; }
-        .reply-list { background: #222; padding: 10px; font-size: 0.85rem; margin: 10px 0; border-left: 3px solid var(--navy); }
+        .btn { border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-approve { background: var(--success); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        .btn-create { background: var(--primary); color: white; width: 100%; padding: 12px; margin-top: 10px; }
+        
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .badge-pending { background: #fff4e5; color: #b76e00; }
     </style>
 </head>
-<body id="adminBody" style="display:none;">
+<body>
 
-    <div class="flag-header">
-        <div class="stripe s-saffron"></div>
-        <div class="stripe s-white"><img src="https://upload.wikimedia.org/wikipedia/commons/1/17/Ashoka_Chakra.svg" class="chakra"></div>
-        <div class="stripe s-green"></div>
+<div class="sidebar">
+    <h2>MIGA ADMIN</h2>
+    <a href="index.html" class="nav-link">← Public Website</a>
+    <a href="#ideas-section" class="nav-link">Transformation Ideas</a>
+    <a href="#apps-section" class="nav-link">Membership Requests</a>
+    <a href="#teams-section" class="nav-link">Manage Work Groups</a>
+</div>
+
+<div class="main">
+    <h1>Dashboard Overview</h1>
+
+    <div class="section" id="teams-section">
+        <h2>Create New Work Group</h2>
+        <input type="text" id="teamNameInput" placeholder="Enter Team Name (e.g., Clean Ganga Project)" style="width:70%; padding:10px;">
+        <button class="btn btn-create" onclick="createNewTeam()" style="width:25%;">Create Team</button>
     </div>
 
-    <div class="container">
-        <h1>Admin Control: @AryanFluxOfficial</h1>
-        
-        <div class="card" style="border: 2px solid var(--saffron);">
-            <h3>📢 Post Official Admin Idea</h3>
-            <textarea id="adminText" rows="3" placeholder="This will skip the queue and go live immediately..."></textarea>
-            <button class="btn-post" onclick="postAdminIdea()">Post Live to Index</button>
-        </div>
-
-        <div class="section-header">
-            <h2>⏳ Pending Approvals (Approve for Voting)</h2>
-        </div>
-        <div id="pendingList"></div>
-
-        <div class="section-header">
-            <h2>✅ Live on Index (Reply & Manage)</h2>
-        </div>
-        <div id="approvedList"></div>
+    <div class="section" id="apps-section">
+        <h2>Membership Requests</h2>
+        <table id="appsTable">
+            <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr>
+            </thead>
+            <tbody id="appsBody"></tbody>
+        </table>
     </div>
 
-<script>
-    
-    // ----------------------------------------------------
-    // 1. SECURITY (Change '12345' to your secret password)
-    // ----------------------------------------------------
-    const pass = prompt("Enter Admin Password:");
-    if(pass === "PROJECT_MIGA9893") { 
-        document.getElementById('adminBody').style.display = "block";
-    } else {
-        alert("Wrong Password!");
-        window.location.href = "index.html";
-    }
-    // Function to create a new Team Room
-async function createTeam(teamName) {
-    await addDoc(collection(db, "teams"), {
-        name: teamName,
-        createdAt: new Date()
-    });
-    alert("Team " + teamName + " Created!");
-}
-
-    // ----------------------------------------------------
-    // 2. YOUR FIREBASE CONFIG
-    // ----------------------------------------------------
-    const firebaseConfig = {
-      apiKey: "AIzaSyBbfXH429vsn69hSFO1l8VjzC56FxsTznE",
-      authDomain: "project--miga.firebaseapp.com",
-      projectId: "project--miga",
-      storageBucket: "project--miga.firebasestorage.app",
-      messagingSenderId: "741778970339",
-      appId: "1:741778970339:web:b37d614e97add42b2417d6"
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // POST OFFICIAL ADMIN IDEA
-    function postAdminIdea() {
-        const text = document.getElementById('adminText').value.trim();
-        if(!text) return;
-        db.collection("ideas").add({
-            name: "Aryan (Admin)",
-            email: "admin@miga.com",
-            text: text,
-            votes: 0,
-            status: 'approved',
-            replies: [],
-            adminPrivateNote: "",
-            timestamp: Date.now()
-        }).then(() => {
-            alert("Official Post Live!");
-            document.getElementById('adminText').value = "";
-        });
-    }
-
-    // LOAD AND MANAGE IDEAS
-    db.collection("ideas").orderBy("timestamp", "desc").onSnapshot(snap => {
-        const pendingEl = document.getElementById('pendingList');
-        const approvedEl = document.getElementById('approvedList');
-        pendingEl.innerHTML = "";
-        approvedEl.innerHTML = "";
-
-        snap.forEach(doc => {
-            const data = doc.data();
-            const id = doc.id;
-
-            let repliesHtml = (data.replies || []).map(r => 
-                `<div style="margin:2px 0;"><strong>${r.user}:</strong> ${r.msg}</div>`
-            ).join('');
-
-            const cardHtml = `
-                <div class="card">
-                    <div style="font-size:1.1rem; margin-bottom:10px;">${data.text}</div>
-                    <div style="color:#aaa; font-size:0.8rem;">By: ${data.name} | Email: ${data.email}</div>
-                    
-                    <div style="margin-top:10px;">
-                        <input type="text" id="note-${id}" placeholder="Private message for this user..." value="${data.adminPrivateNote || ''}">
-                        <button class="btn-note" onclick="saveNote('${id}')">Save Private Note</button>
-                    </div>
-
-                    <div class="reply-list">
-                        <strong>Discussions:</strong><br>${repliesHtml || "No replies yet."}
-                    </div>
-
-                    <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
-                        ${data.status === 'pending' ? 
-                            `<button class="btn-approve" onclick="approve('${id}')">✔ APPROVE FOR VOTING</button>` : 
-                            `<div style="display:flex; gap:5px; margin-bottom:10px;">
-                                <input type="text" id="rep-${id}" placeholder="Reply as Admin..." style="margin:0;">
-                                <button class="btn-reply" onclick="adminReply('${id}')">Reply</button>
-                            </div>`
-                        }
-                        <button class="btn-del" onclick="deleteIdea('${id}')" style="float:right;">🗑 Delete</button>
-                        <div style="clear:both;"></div>
-                    </div>
-                </div>`;
-
-            if(data.status === 'pending') pendingEl.innerHTML += cardHtml;
-            else approvedEl.innerHTML += cardHtml;
-        });
-    });
-
-    function approve(id) { db.collection("ideas").doc(id).update({ status: 'approved' }); }
-    function deleteIdea(id) { if(confirm("Delete forever?")) db.collection("ideas").doc(id).delete(); }
-    
-    function saveNote(id) {
-        const note = document.getElementById('note-'+id).value;
-        db.collection("ideas").doc(id).update({ adminPrivateNote: note }).then(() => alert("Note saved."));
-    }
-
-    function adminReply(id) {
-        const msg = document.getElementById('rep-'+id).value.trim();
-        if(!msg) return;
-        db.collection("ideas").doc(id).update({
-            replies: firebase.firestore.FieldValue.arrayUnion({ 
-                user: "Aryan (Admin)", 
-                msg: msg, 
-                timestamp: Date.now() 
-            })
-        }).then(() => { document.getElementById('rep-'+id).value = ""; });
-    }
-</script>
-<div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
-    <h2>Pending Team Applications</h2>
-    <div id="applicationsList">Loading...</div>
+    <div class="section" id="ideas-section">
+        <h2>Submitted Ideas</h2>
+        <table id="ideasTable">
+            <thead>
+                <tr><th>Name</th><th>Category</th><th>Idea</th><th>Action</th></tr>
+            </thead>
+            <tbody id="ideasBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <script type="module">
-    // ... (Your existing Firebase imports) ...
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 1. Load Applications
+    // PASTE YOUR FIREBASE CONFIG HERE
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "project--miga.firebaseapp.com",
+        projectId: "project--miga",
+        storageBucket: "project--miga.appspot.com",
+        messagingSenderId: "YOUR_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- A. PROTECT THE PAGE WITH A SIMPLE PASSWORD ---
+    const pass = prompt("Enter Admin Password:");
+    if(pass !== "Opac@9893") {
+        alert("Wrong Password");
+        window.location.href = "index.html";
+    }
+
+    // --- B. LOAD MEMBERSHIP APPLICATIONS ---
     onSnapshot(collection(db, "team_applications"), (snapshot) => {
-        const list = document.getElementById('applicationsList');
-        list.innerHTML = "";
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.status === "approved") return; // Skip if already approved
-
-            const div = document.createElement('div');
-            div.style = "border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between;";
-            div.innerHTML = `
-                <span><strong>${data.name}</strong> (${data.role}) - ${data.email}</span>
-                <button onclick="approveUser('${doc.id}', '${data.name}', '${data.email}')" style="background:green; color:white; border:none; padding:5px 10px; cursor:pointer;">Approve</button>
-            `;
-            list.appendChild(div);
+        const tbody = document.getElementById('appsBody');
+        tbody.innerHTML = "";
+        snapshot.forEach(item => {
+            const d = item.data();
+            if(d.status === "approved") return;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${d.name}</td><td>${d.email}</td><td><span class="badge badge-pending">${d.role}</span></td>
+                <td>
+                    <button class="btn btn-approve" onclick="approveMember('${item.id}', '${d.name}', '${d.email}')">Approve</button>
+                    <button class="btn btn-delete" onclick="rejectMember('${item.id}')">Reject</button>
+                </td>`;
+            tbody.appendChild(tr);
         });
     });
 
-    // 2. Approval Logic
-    import { updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    
-    window.approveUser = async (id, name, email) => {
-        // Update the application status
-        await updateDoc(doc(db, "team_applications", id), {
-            status: "approved"
+    // --- C. LOAD PUBLIC IDEAS ---
+    onSnapshot(collection(db, "ideas"), (snapshot) => {
+        const tbody = document.getElementById('ideasBody');
+        tbody.innerHTML = "";
+        snapshot.forEach(item => {
+            const d = item.data();
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${d.name}</td><td><strong>${d.category}</strong></td><td>${d.text}</td>
+                <td><button class="btn btn-delete" onclick="deleteIdea('${item.id}')">Remove</button></td>`;
+            tbody.appendChild(tr);
         });
-        
-        // Add to official "approved_members" list
-        await addDoc(collection(db, "approved_members"), {
-            name: name,
-            email: email,
-            approvedAt: new Date()
-        });
-        alert(name + " is now an official team member!");
+    });
+
+    // --- D. LOGIC FUNCTIONS ---
+    window.approveMember = async (id, name, email) => {
+        await updateDoc(doc(db, "team_applications", id), { status: "approved" });
+        await addDoc(collection(db, "approved_members"), { name, email, date: new Date() });
+        alert("Member Approved! They can now access the Team Hub.");
+    };
+
+    window.rejectMember = async (id) => {
+        if(confirm("Are you sure you want to reject this applicant?")) {
+            await deleteDoc(doc(db, "team_applications", id));
+        }
+    };
+
+    window.deleteIdea = async (id) => {
+        if(confirm("Delete this idea?")) await deleteDoc(doc(db, "ideas", id));
+    };
+
+    window.createNewTeam = async () => {
+        const name = document.getElementById('teamNameInput').value;
+        if(!name) return;
+        await addDoc(collection(db, "teams"), { name: name, createdAt: new Date() });
+        document.getElementById('teamNameInput').value = "";
+        alert("New Team Room Created!");
     };
 </script>
+
 </body>
-
 </html>
-
-
