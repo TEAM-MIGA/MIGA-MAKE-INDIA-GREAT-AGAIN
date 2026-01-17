@@ -8,65 +8,53 @@
         :root { --whatsapp-green: #075e54; --light-green: #128c7e; --chat-bg: #e5ddd5; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: var(--chat-bg); }
         
-        /* Entrance Overlay */
         #auth-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; }
         .auth-box { padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 350px; }
 
-        /* Sidebar */
         #sidebar { width: 300px; background: var(--whatsapp-green); color: white; display: flex; flex-direction: column; }
         .sidebar-header { padding: 20px; background: #054d44; text-align: center; }
         .team-list { flex: 1; overflow-y: auto; padding: 10px; }
         .team-item { background: var(--light-green); padding: 15px; margin-bottom: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; border: none; color: white; width: 100%; text-align: left; font-size: 16px; }
         .team-item:hover { background: #0a6b5e; }
 
-        /* Chat Area */
-        #chat-window { flex: 1; display: flex; flex-direction: column; }
+        #chat-window { flex: 1; display: flex; flex-direction: column; position: relative; }
         #chat-header { background: #ededed; padding: 15px 25px; display: flex; align-items: center; border-bottom: 1px solid #ddd; }
         #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         
-        .message { background: white; padding: 10px 15px; border-radius: 8px; max-width: 70%; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-self: flex-start; word-wrap: break-word; }
-        .sender-name { font-size: 12px; font-weight: bold; color: var(--whatsapp-green); display: block; margin-bottom: 4px; }
+        .message { background: white; padding: 10px 15px; border-radius: 8px; max-width: 70%; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-self: flex-start; }
+        .sender-name { font-size: 11px; font-weight: bold; color: var(--whatsapp-green); display: block; margin-bottom: 4px; }
         .timestamp { font-size: 10px; color: #999; display: block; text-align: right; margin-top: 5px; }
-        .chat-img { max-width: 100%; border-radius: 5px; margin-top: 5px; display: block; }
+        .chat-img { max-width: 100%; border-radius: 5px; margin-top: 5px; display: block; cursor: pointer; }
 
-        /* Input Area */
         #input-area { background: #f0f0f0; padding: 15px; display: flex; align-items: center; gap: 10px; }
         input[type="text"] { flex: 1; padding: 12px; border: none; border-radius: 25px; outline: none; }
-        .send-btn { background: var(--whatsapp-green); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-        .file-btn { background: #555; font-size: 18px; }
+        .btn-circle { background: var(--whatsapp-green); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
     </style>
 </head>
 <body>
 
 <div id="auth-overlay">
     <div class="auth-box">
-        <h2 style="color: var(--whatsapp-green)">Team Authentication</h2>
-        <p>Only approved MIGA members can enter.</p>
-        <input type="text" id="loginName" placeholder="Your Display Name" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-        <input type="email" id="loginEmail" placeholder="Registered Email" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px;">
-        <button onclick="verifyAndEntry()" style="width:100%; padding:12px; background:var(--whatsapp-green); color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Access Hub</button>
+        <h2 style="color: var(--whatsapp-green)">MIGA Authentication</h2>
+        <input type="text" id="loginName" placeholder="Display Name" style="width:90%; padding:10px; margin-bottom:10px;">
+        <input type="email" id="loginEmail" placeholder="Email" style="width:90%; padding:10px; margin-bottom:10px;">
+        <button onclick="verifyAndEntry()" style="width:95%; padding:10px; background:var(--whatsapp-green); color:white; border:none; cursor:pointer;">Enter Hub</button>
     </div>
 </div>
 
 <div id="sidebar">
-    <div class="sidebar-header">
-        <h3>MIGA WORK GROUPS</h3>
-    </div>
+    <div class="sidebar-header"><h3>WORK GROUPS</h3></div>
     <div class="team-list" id="teamRooms"></div>
-    <button onclick="location.href='index.html'" style="padding:15px; background:#054d44; color:white; border:none; cursor:pointer;">← Leave Hub</button>
 </div>
 
 <div id="chat-window">
-    <div id="chat-header">
-        <h3 id="currentRoomName">Select a Work Group to Start</h3>
-    </div>
+    <div id="chat-header"><h3 id="currentRoomName">Select a Group</h3></div>
     <div id="messages"></div>
-    
     <div id="input-area" style="display:none;">
-        <input type="file" id="fileInput" style="display:none;" accept="image/*, .pdf, .doc, .docx">
-        <button class="send-btn file-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-        <input type="text" id="msgInput" placeholder="Type a message...">
-        <button class="send-btn" id="sendBtn">➤</button>
+        <input type="file" id="fileInput" style="display:none;" accept="image/*">
+        <button class="btn-circle" onclick="document.getElementById('fileInput').click()" style="background:#666;">📎</button>
+        <input type="text" id="msgInput" placeholder="Message...">
+        <button class="btn-circle" id="sendBtn">➤</button>
     </div>
 </div>
 
@@ -75,7 +63,6 @@
     import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-    // REPLACE WITH YOUR ACTUAL CONFIG
     const firebaseConfig = {
         apiKey: "YOUR_API_KEY",
         authDomain: "project--miga.firebaseapp.com",
@@ -93,31 +80,25 @@
     let activeRoomId = "";
     let messageUnsubscribe = null;
 
-    // 1. Verify Member
     window.verifyAndEntry = async () => {
         const name = document.getElementById('loginName').value;
         const email = document.getElementById('loginEmail').value;
-        
-        if(!name || !email) return alert("Please fill all fields");
+        if(!name || !email) return alert("Fill all fields");
 
         const q = query(collection(db, "approved_members"), where("email", "==", email));
-        const snapshot = await getDocs(q);
+        const snap = await getDocs(q);
+        if (snap.empty) return alert("Not authorized");
 
-        if (snapshot.empty) {
-            alert("Email not recognized. Please contact Admin.");
-        } else {
-            currentUser = name;
-            document.getElementById('auth-overlay').style.display = 'none';
-            loadRooms();
-        }
+        currentUser = name;
+        document.getElementById('auth-overlay').style.display = 'none';
+        loadRooms();
     };
 
-    // 2. Load Rooms
     function loadRooms() {
-        onSnapshot(collection(db, "teams"), (snapshot) => {
+        onSnapshot(collection(db, "teams"), (snap) => {
             const list = document.getElementById('teamRooms');
             list.innerHTML = "";
-            snapshot.forEach(doc => {
+            snap.forEach(doc => {
                 const btn = document.createElement('button');
                 btn.className = "team-item";
                 btn.innerText = "📁 " + doc.data().name;
@@ -127,87 +108,64 @@
         });
     }
 
-    // 3. Select Room & Load Messages
     function selectRoom(roomId, roomName) {
         activeRoomId = roomId;
-        document.getElementById('currentRoomName').innerText = "Working on: " + roomName;
+        document.getElementById('currentRoomName').innerText = roomName;
         document.getElementById('input-area').style.display = 'flex';
-
         if(messageUnsubscribe) messageUnsubscribe();
 
         const q = query(collection(db, "messages"), where("roomId", "==", roomId), orderBy("time", "asc"));
         
-        messageUnsubscribe = onSnapshot(q, (snapshot) => {
+        messageUnsubscribe = onSnapshot(q, (snap) => {
             const msgArea = document.getElementById('messages');
             msgArea.innerHTML = "";
-            
-            snapshot.forEach(doc => {
+            snap.forEach(doc => {
                 const d = doc.data();
                 const div = document.createElement('div');
                 div.className = "message";
                 
-                // Format Timestamp
-                const timeStr = d.time ? new Date(d.time.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "sending...";
+                // Fix for the "disappearing" bug (handle null timestamp while sending)
+                const time = d.time ? new Date(d.time.seconds * 1000).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : "pending...";
 
-                // Handle Text or Files
                 let content = `<div>${d.text || ""}</div>`;
-                if (d.fileUrl) {
-                    content += `<a href="${d.fileUrl}" target="_blank">
-                        <img src="${d.fileUrl}" class="chat-img" onerror="this.src='https://via.placeholder.com/50?text=File'">
-                        <small>Download File</small>
-                    </a>`;
-                }
+                if(d.fileUrl) content += `<a href="${d.fileUrl}" target="_blank"><img src="${d.fileUrl}" class="chat-img"></a>`;
 
-                div.innerHTML = `<span class="sender-name">${d.sender}</span>${content}<span class="timestamp">${timeStr}</span>`;
+                div.innerHTML = `<span class="sender-name">${d.sender}</span>${content}<span class="timestamp">${time}</span>`;
                 msgArea.appendChild(div);
             });
             msgArea.scrollTop = msgArea.scrollHeight;
+        }, (err) => {
+            console.error("FIREBASE ERROR:", err);
+            if(err.code === "failed-precondition") alert("Check console (F12) to create Firebase Index!");
         });
     }
 
-    // 4. Send Text Message
-    async function sendMessage() {
-        const textInput = document.getElementById('msgInput');
-        const text = textInput.value.trim();
+    async function handleSend() {
+        const input = document.getElementById('msgInput');
+        const text = input.value.trim();
         if(!text || !activeRoomId) return;
-
-        textInput.value = ""; // Clear immediately for UX
+        input.value = ""; 
         await addDoc(collection(db, "messages"), {
-            roomId: activeRoomId,
-            sender: currentUser,
-            text: text,
-            time: serverTimestamp()
+            roomId: activeRoomId, sender: currentUser, text: text, time: serverTimestamp()
         });
     }
 
-    document.getElementById('sendBtn').onclick = sendMessage;
-    document.getElementById('msgInput').onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+    document.getElementById('sendBtn').onclick = handleSend;
+    document.getElementById('msgInput').onkeypress = (e) => { if(e.key === 'Enter') handleSend(); };
 
-    // 5. Handle File Upload
     document.getElementById('fileInput').onchange = async (e) => {
         const file = e.target.files[0];
         if(!file || !activeRoomId) return;
-
-        const fileRef = ref(storage, `uploads/${activeRoomId}/${Date.now()}_${file.name}`);
-        
+        const path = `chats/${activeRoomId}/${Date.now()}_${file.name}`;
+        const fileRef = ref(storage, path);
         try {
-            const uploadTask = await uploadBytes(fileRef, file);
-            const url = await getDownloadURL(uploadTask.ref);
-
+            const upload = await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(upload.ref);
             await addDoc(collection(db, "messages"), {
-                roomId: activeRoomId,
-                sender: currentUser,
-                text: `Sent a file: ${file.name}`,
-                fileUrl: url,
-                time: serverTimestamp()
+                roomId: activeRoomId, sender: currentUser, text: "Sent an image", fileUrl: url, time: serverTimestamp()
             });
-            e.target.value = ""; // Reset input
-        } catch (error) {
-            console.error(error);
-            alert("Error uploading file.");
-        }
+        } catch (err) { alert("Upload failed!"); }
     };
 </script>
-
 </body>
 </html>
