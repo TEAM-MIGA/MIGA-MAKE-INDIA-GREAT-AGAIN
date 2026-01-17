@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIGA - Make India Great Again</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --saffron: #FF9933; --white: #FFFFFF; --green: #138808; --navy: #000080; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; margin: 0; color: #333; }
+        
+        /* Indian Flag Header */
+        .flag-header { width: 100%; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .stripe { width: 100%; height: 45px; display: flex; align-items: center; justify-content: center; }
+        .s-saffron { background-color: var(--saffron); }
+        .s-white { background-color: var(--white); position: relative; height: 50px; }
+        .s-green { background-color: var(--green); }
+        .chakra { height: 45px; width: 45px; animation: spin 10s linear infinite; }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Main Content */
+        header { background: white; text-align: center; padding: 30px 20px; border-bottom: 3px solid var(--navy); }
+        .header-link { color: var(--navy); text-decoration: none; font-weight: 700; font-size: 1.2rem; }
+        .header-link:hover { text-decoration: underline; }
+
+        .container { max-width: 850px; margin: auto; padding: 20px; }
+        
+        .card { background: white; border-radius: 12px; padding: 30px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        
+        .mission-text { line-height: 1.8; color: #555; border-left: 4px solid var(--saffron); padding-left: 20px; margin: 20px 0; text-align: justify; }
+
+        /* Form Elements */
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        .btn-main { background: var(--navy); color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .btn-main:hover { background: #00005a; }
+
+        /* Ideas List */
+        .idea-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; border-top: 4px solid var(--green); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .vote-section { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
+        .vote-count { font-size: 1.3rem; font-weight: bold; color: var(--navy); }
+        .btn-vote { background: var(--green); color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        
+        .admin-badge { background: #e3f2fd; color: #0d47a1; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.9rem; border: 1px solid #bbdefb; }
+        
+        .comments-section { background: #f9f9f9; padding: 15px; margin-top: 15px; border-radius: 8px; }
+        .comment-row { border-bottom: 1px solid #e0e0e0; padding: 8px 0; font-size: 0.9rem; }
+        .comment-row strong { color: var(--navy); }
+    </style>
+</head>
+<body>
+
+    <div class="flag-header">
+        <div class="stripe s-saffron"></div>
+        <div class="stripe s-white">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/17/Ashoka_Chakra.svg" class="chakra" alt="Ashoka Chakra">
+        </div>
+        <div class="stripe s-green"></div>
+    </div>
+
+    <header>
+        <h1>MIGA: Make India Great Again</h1>
+        <p>Project Initiated by <a href="https://youtube.com/@AryanFluxOfficial" target="_blank" class="header-link">@AryanFluxOfficial</a></p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Our Mission for Bharat</h2>
+            <div class="mission-text">
+                <p>We want to make India great again by initiating this project as a digital cornerstone for national transformation. This platform is for all people who want to suggest their ideas to do the same. India is not just a landmass; it is a civilization with untapped potential waiting to be unleashed by its youth.</p>
+                
+                <p>We believe that complaints without solutions are noise. MIGA provides a structured avenue where every citizen—from students to professionals—can submit actionable blueprints for change. Whether it is revolutionizing our education system, cleaning our streets, or advancing our technological sovereignty, your voice matters here.</p>
+                
+                <p>Once you submit your vision, it enters a review process led by Aryan. Approved ideas are displayed here for public voting and debate. The most powerful ideas will be featured on the <strong>Aryan Flux Official</strong> channel, bridging the gap between digital thoughts and real-world execution. Let us stop waiting for change and start engineering it.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Submit Your Idea for India</h3>
+            <input type="text" id="userName" placeholder="Your Name">
+            <input type="email" id="userEmail" placeholder="Your Email (Required to receive Aryan's Private Notes)">
+            <textarea id="userIdea" rows="5" placeholder="Describe your plan in detail..."></textarea>
+            <button class="btn-main" onclick="submitIdea()">Send Idea for Review</button>
+        </div>
+
+        <h2 style="text-align: center; color: var(--navy);">Approved Ideas & Voting</h2>
+        <div id="ideasList"></div>
+    </div>
+
+<script>
+    // --------------------------------------------------------------
+    // 1. YOUR EXACT FIREBASE CONFIG (Already Inserted)
+    // --------------------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbfXH429vsn69hSFO1l8VjzC56FxsTznE",
+      authDomain: "project--miga.firebaseapp.com",
+      projectId: "project--miga",
+      storageBucket: "project--miga.firebasestorage.app",
+      messagingSenderId: "741778970339",
+      appId: "1:741778970339:web:b37d614e97add42b2417d6"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // 2. FUNCTION TO SUBMIT IDEAS
+    function submitIdea() {
+        const name = document.getElementById('userName').value.trim();
+        const email = document.getElementById('userEmail').value.trim();
+        const text = document.getElementById('userIdea').value.trim();
+
+        if(!name || !email || !text) {
+            alert("Please fill in all fields (Name, Email, and Idea).");
+            return;
+        }
+
+        // Save email locally
+        localStorage.setItem('miga_user_email', email);
+
+        // Add to database
+        db.collection("ideas").add({
+            name: name,
+            email: email,
+            text: text,
+            votes: 0,
+            status: 'pending',
+            replies: [],
+            adminPrivateNote: "",
+            timestamp: Date.now()
+        })
+        .then(() => {
+            alert("Success! Your idea has been sent to Aryan for review.");
+            document.getElementById('userIdea').value = "";
+            location.reload(); 
+        })
+        .catch((error) => {
+            console.error("Error adding document: ", error);
+            alert("Error: " + error.message);
+        });
+    }
+
+    // 3. LISTEN FOR APPROVED IDEAS
+    db.collection("ideas").where("status", "==", "approved").onSnapshot((snapshot) => {
+        const list = document.getElementById('ideasList');
+        list.innerHTML = ""; 
+        
+        const myEmail = localStorage.getItem('miga_user_email');
+        
+        // Manual Sort
+        let docs = [];
+        snapshot.forEach(doc => docs.push({id: doc.id, ...doc.data()}));
+        docs.sort((a, b) => b.timestamp - a.timestamp);
+
+        docs.forEach((data) => {
+            const id = data.id;
+
+            // Render comments
+            let commentsHTML = "";
+            if(data.replies && data.replies.length > 0) {
+                commentsHTML = data.replies.map(r => 
+                    `<div class="comment-row"><strong>${r.user}:</strong> ${r.msg}</div>`
+                ).join('');
+            } else {
+                commentsHTML = "<div style='color:#999; font-size:0.8rem;'>No discussions yet.</div>";
+            }
+
+            // Check admin note
+            let adminNoteHTML = "";
+            if(data.adminPrivateNote && data.email === myEmail) {
+                adminNoteHTML = `<div class="admin-badge"><strong>🔔 Message from Aryan:</strong> ${data.adminPrivateNote}</div>`;
+            }
+
+            // Render Card
+            list.innerHTML += `
+                <div class="idea-card">
+                    <p style="margin-top:0;">${data.text}</p>
+                    <small style="color:#666;">By: ${data.name}</small>
+                    
+                    ${adminNoteHTML}
+
+                    <div class="vote-section">
+                        <span class="vote-count">${data.votes} Votes</span>
+                        <button class="btn-vote" onclick="voteIdea('${id}', ${data.votes})">Upvote</button>
+                    </div>
+
+                    <div class="comments-section">
+                        <div style="margin-bottom:10px; max-height:150px; overflow-y:auto;">
+                            ${commentsHTML}
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                            <input type="text" id="reply-${id}" placeholder="Join the discussion..." style="margin:0;">
+                            <button onclick="postReply('${id}')" style="background:var(--navy); color:white; border:none; padding:0 15px; border-radius:4px; cursor:pointer;">Post</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    });
+
+    // 4. VOTE
+    function voteIdea(id, currentVotes) {
+        if(localStorage.getItem('voted_' + id)) {
+            alert("You have already voted for this idea!");
+            return;
+        }
+        db.collection("ideas").doc(id).update({
+            votes: currentVotes + 1
+        }).then(() => {
+            localStorage.setItem('voted_' + id, true);
+        });
+    }
+
+    // 5. REPLY
+    function postReply(id) {
+        const input = document.getElementById('reply-' + id);
+        const msg = input.value.trim();
+        const username = document.getElementById('userName').value || "Citizen";
+
+        if(!msg) return;
+
+        db.collection("ideas").doc(id).update({
+            replies: firebase.firestore.FieldValue.arrayUnion({
+                user: username,
+                msg: msg,
+                timestamp: Date.now()
+            })
+        }).then(() => {
+            input.value = "";
+        });
+    }
+</script>
+
+</body>
+</html>

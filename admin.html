@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MIGA Admin - Aryan's Command Centre</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --saffron: #FF9933; --white: #FFFFFF; --green: #138808; --navy: #000080; }
+        body { font-family: 'Poppins', sans-serif; background: #1a1a1a; margin: 0; color: #e0e0e0; }
+        
+        .flag-header { width: 100%; display: flex; flex-direction: column; }
+        .stripe { width: 100%; height: 30px; display: flex; align-items: center; justify-content: center; }
+        .s-saffron { background-color: var(--saffron); }
+        .s-white { background-color: var(--white); height: 35px; }
+        .s-green { background-color: var(--green); }
+        .chakra { height: 30px; width: 30px; }
+
+        .container { max-width: 900px; margin: auto; padding: 20px; }
+        h1, h2 { color: var(--saffron); }
+
+        .card { background: #2d2d2d; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #444; }
+        
+        textarea, input { width: 100%; background: #444; color: white; border: 1px solid #555; padding: 10px; border-radius: 5px; box-sizing: border-box; font-family: inherit; margin-bottom: 10px; }
+        
+        button { cursor: pointer; padding: 10px 15px; border: none; border-radius: 5px; font-weight: bold; margin-right: 5px; transition: 0.2s; }
+        .btn-post { background: var(--saffron); color: black; width: 100%; }
+        .btn-approve { background: var(--green); color: white; }
+        .btn-reply { background: var(--navy); color: white; }
+        .btn-del { background: #d32f2f; color: white; }
+        .btn-note { background: #0288d1; color: white; font-size: 0.8rem; }
+
+        .section-header { border-bottom: 2px solid #555; padding-bottom: 10px; margin-bottom: 20px; margin-top: 40px; }
+        .reply-list { background: #222; padding: 10px; font-size: 0.85rem; margin: 10px 0; border-left: 3px solid var(--navy); }
+    </style>
+</head>
+<body id="adminBody" style="display:none;">
+
+    <div class="flag-header">
+        <div class="stripe s-saffron"></div>
+        <div class="stripe s-white"><img src="https://upload.wikimedia.org/wikipedia/commons/1/17/Ashoka_Chakra.svg" class="chakra"></div>
+        <div class="stripe s-green"></div>
+    </div>
+
+    <div class="container">
+        <h1>Admin Control: @AryanFluxOfficial</h1>
+        
+        <div class="card" style="border: 2px solid var(--saffron);">
+            <h3>📢 Post Official Admin Idea</h3>
+            <textarea id="adminText" rows="3" placeholder="This will skip the queue and go live immediately..."></textarea>
+            <button class="btn-post" onclick="postAdminIdea()">Post Live to Index</button>
+        </div>
+
+        <div class="section-header">
+            <h2>⏳ Pending Approvals (Approve for Voting)</h2>
+        </div>
+        <div id="pendingList"></div>
+
+        <div class="section-header">
+            <h2>✅ Live on Index (Reply & Manage)</h2>
+        </div>
+        <div id="approvedList"></div>
+    </div>
+
+<script>
+    // ----------------------------------------------------
+    // 1. SECURITY (Change '12345' to your secret password)
+    // ----------------------------------------------------
+    const pass = prompt("Enter Admin Password:");
+    if(pass === "PROJECT_MIGA9893") { 
+        document.getElementById('adminBody').style.display = "block";
+    } else {
+        alert("Wrong Password!");
+        window.location.href = "index.html";
+    }
+
+    // ----------------------------------------------------
+    // 2. YOUR FIREBASE CONFIG
+    // ----------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbfXH429vsn69hSFO1l8VjzC56FxsTznE",
+      authDomain: "project--miga.firebaseapp.com",
+      projectId: "project--miga",
+      storageBucket: "project--miga.firebasestorage.app",
+      messagingSenderId: "741778970339",
+      appId: "1:741778970339:web:b37d614e97add42b2417d6"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // POST OFFICIAL ADMIN IDEA
+    function postAdminIdea() {
+        const text = document.getElementById('adminText').value.trim();
+        if(!text) return;
+        db.collection("ideas").add({
+            name: "Aryan (Admin)",
+            email: "admin@miga.com",
+            text: text,
+            votes: 0,
+            status: 'approved',
+            replies: [],
+            adminPrivateNote: "",
+            timestamp: Date.now()
+        }).then(() => {
+            alert("Official Post Live!");
+            document.getElementById('adminText').value = "";
+        });
+    }
+
+    // LOAD AND MANAGE IDEAS
+    db.collection("ideas").orderBy("timestamp", "desc").onSnapshot(snap => {
+        const pendingEl = document.getElementById('pendingList');
+        const approvedEl = document.getElementById('approvedList');
+        pendingEl.innerHTML = "";
+        approvedEl.innerHTML = "";
+
+        snap.forEach(doc => {
+            const data = doc.data();
+            const id = doc.id;
+
+            let repliesHtml = (data.replies || []).map(r => 
+                `<div style="margin:2px 0;"><strong>${r.user}:</strong> ${r.msg}</div>`
+            ).join('');
+
+            const cardHtml = `
+                <div class="card">
+                    <div style="font-size:1.1rem; margin-bottom:10px;">${data.text}</div>
+                    <div style="color:#aaa; font-size:0.8rem;">By: ${data.name} | Email: ${data.email}</div>
+                    
+                    <div style="margin-top:10px;">
+                        <input type="text" id="note-${id}" placeholder="Private message for this user..." value="${data.adminPrivateNote || ''}">
+                        <button class="btn-note" onclick="saveNote('${id}')">Save Private Note</button>
+                    </div>
+
+                    <div class="reply-list">
+                        <strong>Discussions:</strong><br>${repliesHtml || "No replies yet."}
+                    </div>
+
+                    <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px;">
+                        ${data.status === 'pending' ? 
+                            `<button class="btn-approve" onclick="approve('${id}')">✔ APPROVE FOR VOTING</button>` : 
+                            `<div style="display:flex; gap:5px; margin-bottom:10px;">
+                                <input type="text" id="rep-${id}" placeholder="Reply as Admin..." style="margin:0;">
+                                <button class="btn-reply" onclick="adminReply('${id}')">Reply</button>
+                            </div>`
+                        }
+                        <button class="btn-del" onclick="deleteIdea('${id}')" style="float:right;">🗑 Delete</button>
+                        <div style="clear:both;"></div>
+                    </div>
+                </div>`;
+
+            if(data.status === 'pending') pendingEl.innerHTML += cardHtml;
+            else approvedEl.innerHTML += cardHtml;
+        });
+    });
+
+    function approve(id) { db.collection("ideas").doc(id).update({ status: 'approved' }); }
+    function deleteIdea(id) { if(confirm("Delete forever?")) db.collection("ideas").doc(id).delete(); }
+    
+    function saveNote(id) {
+        const note = document.getElementById('note-'+id).value;
+        db.collection("ideas").doc(id).update({ adminPrivateNote: note }).then(() => alert("Note saved."));
+    }
+
+    function adminReply(id) {
+        const msg = document.getElementById('rep-'+id).value.trim();
+        if(!msg) return;
+        db.collection("ideas").doc(id).update({
+            replies: firebase.firestore.FieldValue.arrayUnion({ 
+                user: "Aryan (Admin)", 
+                msg: msg, 
+                timestamp: Date.now() 
+            })
+        }).then(() => { document.getElementById('rep-'+id).value = ""; });
+    }
+</script>
+</body>
+</html>
