@@ -64,14 +64,7 @@
     </div>
 
 <script>
-    // Function to create a new Team Room
-async function createTeam(teamName) {
-    await addDoc(collection(db, "teams"), {
-        name: teamName,
-        createdAt: new Date()
-    });
-    alert("Team " + teamName + " Created!");
-}
+    
     // ----------------------------------------------------
     // 1. SECURITY (Change '12345' to your secret password)
     // ----------------------------------------------------
@@ -82,6 +75,14 @@ async function createTeam(teamName) {
         alert("Wrong Password!");
         window.location.href = "index.html";
     }
+    // Function to create a new Team Room
+async function createTeam(teamName) {
+    await addDoc(collection(db, "teams"), {
+        name: teamName,
+        createdAt: new Date()
+    });
+    alert("Team " + teamName + " Created!");
+}
 
     // ----------------------------------------------------
     // 2. YOUR FIREBASE CONFIG
@@ -187,3 +188,4 @@ async function createTeam(teamName) {
 </body>
 
 </html>
+
